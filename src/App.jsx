@@ -1,12 +1,6 @@
 // src/App.jsx
-
-import React, { useEffect, useState } from 'react';
-import {
-  Routes,
-  Route,
-  Navigate,
-  useLocation,
-} from 'react-router-dom';
+import React from 'react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -15,41 +9,54 @@ import RegisterPage from './components/RegisterPage';
 import PublicationListPage from './components/PublicationListPage';
 import AddPublicationPage from './components/AddPublicationPage';
 import EditPublicationPage from './components/EditPublicationPage';
+import ProtectedRoute from './components/ProtectedRoute'; // ✅
 
 export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const location = useLocation();
+  const token = localStorage.getItem("token");
 
-  // Cek token login setiap kali route berubah
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    setIsLoggedIn(!!token); // Set true jika token ada
-  }, [location.pathname]);
-
-  // Sembunyikan navbar saat berada di halaman login/register
   const hideNavbarRoutes = ['/login', '/register'];
-  const shouldShowNavbar = isLoggedIn && !hideNavbarRoutes.includes(location.pathname);
+  const shouldShowNavbar = token && !hideNavbarRoutes.includes(location.pathname);
 
   return (
     <div className="bg-gray-100 min-h-screen font-sans">
-      {shouldShowNavbar && (
-        <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
-      )}
+      {shouldShowNavbar && <Navbar isLoggedIn={!!token} setIsLoggedIn={() => {}} />}
 
       <main className="p-4 sm:p-6 lg:p-8">
         <Routes>
-          {/* Public Routes */}
-          <Route path="/login" element={<LoginPage setIsLoggedIn={setIsLoggedIn} />} />
+          {/* ✅ Halaman login dan register tidak perlu login */}
+          <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
 
-          {/* Protected Routes (sudah disaring melalui isLoggedIn & Navbar) */}
-          <Route path="/publications" element={<PublicationListPage />} />
-          <Route path="/publications/add" element={<AddPublicationPage />} />
-          <Route path="/publications/edit/:id" element={<EditPublicationPage />} />
+          {/* ✅ Semua route ini wajib login */}
+          <Route
+            path="/publications"
+            element={
+              <ProtectedRoute>
+                <PublicationListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/publications/add"
+            element={
+              <ProtectedRoute>
+                <AddPublicationPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/publications/edit/:id"
+            element={
+              <ProtectedRoute>
+                <EditPublicationPage />
+              </ProtectedRoute>
+            }
+          />
 
-          {/* Redirect Routes */}
+          {/* Redirect default */}
           <Route path="/" element={<Navigate to="/publications" replace />} />
-          <Route path="*" element={<Navigate to="/publications" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
 
