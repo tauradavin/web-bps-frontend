@@ -5,7 +5,7 @@ import axios from "axios";
 // Buat instance axios yang terpusat
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL + "/api", // URL API dari .env
-  withCredentials: true, // Kirim cookie jika diperlukan
+  // withCredentials: true,
   headers: {
     Accept: "application/json",
     "Content-Type": "application/json",
